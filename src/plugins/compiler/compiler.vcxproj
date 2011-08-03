@@ -93,13 +93,18 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PreBuildEvent>
+      <Command>copy /Y $(SolutionDir)..\lib\NWNScriptCompilerDll\lib\NWNScriptCompilerDll.ndl $(OutDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\core\IniFile.cpp" />
     <ClCompile Include="CExoString.cpp" />
     <ClCompile Include="compiler.cpp" />
     <ClCompile Include="NscCompiler.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\core\IniFile.h" />
     <ClInclude Include="CExoString.h" />
     <ClInclude Include="CScriptCompiler.h" />
     <ClInclude Include="NscCompiler.h" />

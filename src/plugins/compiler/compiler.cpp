@@ -3,6 +3,7 @@
 #include <tchar.h>
 #include <pluginapi.h>
 #include "detours.h"
+#include "../../core/IniFile.h"
 
 namespace NWN { typedef int ResType; struct ResRef32 { char RefStr[32]; }; }
 #define NSCEXT_NO_NWN2DATALIB_REFS
@@ -18,6 +19,9 @@ using namespace NscExt;
 
 FILE *logFile;
 char logFileName[] = "logs/nwntx_compiler.txt";
+bool enableOptimizations = false;
+bool enableExtensions = false;
+bool generateDebugInfo = false;
 
 void __stdcall NscCompilerDiagnosticOutput(const char * DiagnosticMessage, void * Context);
 bool __stdcall ResLoadFile(const NWN::ResRef32 & ResRef, ResType Type, void **FileContents, size_t * FileSize, void *Context);
@@ -92,7 +96,7 @@ int CScriptCompiler__CompileFile_Hook(CScriptCompiler *pScriptCompiler, CExoStri
 	g_stDispatchTable.Context = pScriptCompiler;
 	fprintf(logFile, "Compiling script: %s\n", sScriptName->Text);
 	fflush(logFile);
-	int result = NscCompileScriptExternal(g_pCompiler, sScriptName->Text, sPath->Text, false, false, true, true, 169, &g_stDispatchTable);
+	int result = NscCompileScriptExternal(g_pCompiler, sScriptName->Text, sPath->Text, false, generateDebugInfo, enableOptimizations, true, 169, &g_stDispatchTable);
 	fprintf(logFile, "Compiled script: %s: %d\n", sScriptName->Text, result);
 	fflush(logFile);
 	return !result;
@@ -139,13 +143,23 @@ void HookFunctions()
 
 void InitPlugin()
 {
+	CIniFile iniFile ("nwntx_compiler.ini");
+	enableOptimizations = iniFile.ReadBool("Compiler", "EnableOptimizations", false);
+	enableExtensions = iniFile.ReadBool("Compiler", "EnableExtensions", false);
+
+	CIniFile nwtoolsetIni ("nwtoolset.ini");
+	generateDebugInfo = iniFile.ReadBool("Script", "GenerateDebugInfo", false);
+
 	//DebugBreak();
 	logFile = fopen(logFileName, "w");
-	fprintf(logFile, "NWN Toolset Extender 1.0.1 - Compiler plugin\n");
+	fprintf(logFile, "NWN Toolset Extender 1.0.2 - Compiler plugin\n");
 	fprintf(logFile, "(c) 2011 by virusman\n");
+	fprintf(logFile, "Enable optimizations: %d\n", enableOptimizations);
+	fprintf(logFile, "Enable extensions: %d\n", enableExtensions);
+	fprintf(logFile, "Generate debug info: %d\n", generateDebugInfo);
 	fflush(logFile);
 
-	g_pCompiler = NscCreateCompiler(true);
+	g_pCompiler = NscCreateCompiler(enableExtensions);
 	/*g_stDispatchTable.Size = sizeof(NSC_COMPILER_DISPATCH_TABLE_V2);
 	g_stDispatchTable.Context = NULL;
 	g_stDispatchTable.ResOpenFile = NULL;*/
