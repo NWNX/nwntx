@@ -15,6 +15,7 @@ char logFileName[] = "logs/nwntx_optimizations.txt";
 typedef std::map<std::string, C2DA *> C2DAMap;
 C2DAMap m2DAMap;
 bool enable2DACache = false;
+bool reloadingHaks = false;
 void InitPlugin();
 
 //////////////////////////////////////////////////////////////////////////
@@ -22,7 +23,7 @@ PLUGINLINK *pluginLink = 0;
 PLUGININFO pluginInfo={
 	sizeof(PLUGININFO),
 	"NWNTX Optimizations plugin",
-	PLUGIN_MAKE_VERSION(1,0,1,0),
+	PLUGIN_MAKE_VERSION(1,0,5,0),
 	"Toolset optimizations",
 	"virusman",
 	"virusman@virusman.ru",
@@ -114,15 +115,24 @@ int __cdecl C2DA__Load2DArray_Hook(C2DA *p2DA)
 	LARGE_INTEGER liFrequency;
 	unsigned int tim;
 	int ret;
+	int nCaller;
+	int nCaller2;
+	__asm {
+		mov eax, [ebp+0x4]
+		mov nCaller, eax
+		mov eax, [ebp]
+		mov eax, [eax+0x4]
+		mov nCaller2, eax
+	}
 
 	CResRef cResRef;
 	strncpy(cResRef.m_resRef, p2DA->m_cResRef.m_resRef, 16);
 	cResRef.m_resRef[15] = 0x0;
 	
-	fprintf(logFile, "2DA parse (%s)\n", cResRef.m_resRef);
+	fprintf(logFile, "2DA parse (%s) - %x\n", cResRef.m_resRef, nCaller);
 	fflush(logFile);
 
-	if(!enable2DACache)
+	if(!enable2DACache || strncmp(cResRef.m_resRef, "appearance", 10) == 0)
 	{
 		fprintf(logFile, "Skipping\n");
 		fflush(logFile);
@@ -159,6 +169,8 @@ void __cdecl C2DA__Unload2DArray_Hook(C2DA *p2DA)
 {
 	if(!enable2DACache)
 	{
+		fprintf(logFile, "Unload: %s\n", p2DA->m_cResRef.m_resRef);
+		fflush(logFile);
 		C2DA__Unload2DArray(p2DA);
 	}
 	if(Find2DA(p2DA))
@@ -171,11 +183,13 @@ void __cdecl C2DA__Destructor_Hook(C2DA *p2DA, char opt)
 {
 	if(!enable2DACache)
 	{
+		fprintf(logFile, "Destructor: %s\n", p2DA->m_cResRef.m_resRef);
+		fflush(logFile);
 		C2DA__Destructor(p2DA, opt);
 	}
 	if(Find2DA(p2DA))
 	{
-		fprintf(logFile, "Destructor called: %x\n", p2DA);
+		fprintf(logFile, "Destructor called: %x, %s\n", p2DA, p2DA->m_cResRef.m_resRef);
 		fflush(logFile);
 		return;
 	}
@@ -185,9 +199,9 @@ void __cdecl C2DA__Destructor_Hook(C2DA *p2DA, char opt)
 
 void Clear2DACache()
 {
-	/*fprintf(logFile, "Clearing 2DA cache\n");
+	fprintf(logFile, "Clearing 2DA cache\n");
 	fflush(logFile);
-	C2DAMap::iterator it;
+	/*C2DAMap::iterator it;
 	for(it = m2DAMap.begin(); it != m2DAMap.end(); ++it) {
 		//C2DA__Unload2DArray(it->second);
 		C2DA__Destructor(it->second, 3);
@@ -203,12 +217,12 @@ __declspec( naked ) void ReloadHaks_Hook()
 		pusha
 	}
 	Clear2DACache();
-	enable2DACache = true;
 	__asm{
 		popa
 		mov eax, ReloadHaks_eax
-		jmp ReloadHaks
+		call ReloadHaks
 	}
+	enable2DACache = true;
 }
 
 void HookFunctions()
@@ -234,7 +248,7 @@ void InitPlugin()
 {
 	//DebugBreak();
 	logFile = fopen(logFileName, "w");
-	fprintf(logFile, "NWNTX Optimizations plugin 1.0.1\n");
+	fprintf(logFile, "NWNTX Optimizations plugin 1.0.5\n");
 	fprintf(logFile, "(c) 2011 by virusman\n");
 	fflush(logFile);
 	/*g_stDispatchTable.Size = sizeof(NSC_COMPILER_DISPATCH_TABLE_V2);
