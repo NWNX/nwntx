@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NWNTX Compiler Plugin", "pl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NWNTX Optimizations Plugin", "plugins\optimizations\optimizations.vcxproj", "{70853336-8399-4CE6-AC3A-DC9D8B1FD189}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NWNTX AABB Plugin", "plugins\aabb\aabb.vcxproj", "{0E2D9580-964F-47BE-A08F-E3210A5A61EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -28,6 +30,10 @@ Global
 		{70853336-8399-4CE6-AC3A-DC9D8B1FD189}.Debug|Win32.Build.0 = Debug|Win32
 		{70853336-8399-4CE6-AC3A-DC9D8B1FD189}.Release|Win32.ActiveCfg = Release|Win32
 		{70853336-8399-4CE6-AC3A-DC9D8B1FD189}.Release|Win32.Build.0 = Release|Win32
+		{0E2D9580-964F-47BE-A08F-E3210A5A61EF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0E2D9580-964F-47BE-A08F-E3210A5A61EF}.Debug|Win32.Build.0 = Debug|Win32
+		{0E2D9580-964F-47BE-A08F-E3210A5A61EF}.Release|Win32.ActiveCfg = Release|Win32
+		{0E2D9580-964F-47BE-A08F-E3210A5A61EF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
