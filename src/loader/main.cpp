@@ -21,7 +21,18 @@
 #include <windows.h>
 #include <stdio.h>
 #include <tchar.h>
+#include <Shlwapi.h>
 #include "detours.h"
+
+TCHAR* GetExecutablePath(TCHAR* dest, size_t destSize)
+{
+    if (!dest) return NULL;
+    if (MAX_PATH > destSize) return NULL;
+
+    DWORD length = GetModuleFileName( NULL, dest, destSize );
+    PathRemoveFileSpec(dest);
+    return dest;
+}
 
 int WINAPI WinMain(         
 				   HINSTANCE hInstance,
@@ -36,8 +47,17 @@ int WINAPI WinMain(
 	ZeroMemory(&pi, sizeof(pi));
 	si.cb = sizeof(si);
 
-	//MessageBox(NULL, lpCmdLine, "Cmd Line", MB_OK);
+	TCHAR exePath[MAX_PATH], newCmdLine[MAX_PATH];
+	GetExecutablePath(exePath, MAX_PATH);
+	SetCurrentDirectory(exePath);
 
-	DetourCreateProcessWithDll("nwtoolset.exe", lpCmdLine, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi, "NWNTX.dll", NULL);
+	sprintf(newCmdLine, "%s %s", "nwtoolset.exe", lpCmdLine);
+
+	if(!DetourCreateProcessWithDll("nwtoolset.exe", newCmdLine, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi, "NWNTX.dll", NULL)) {
+		TCHAR errmsg[255];
+		sprintf_s(errmsg, 255, "Failed to inject DLL: %d", GetLastError());
+
+		MessageBox(NULL, errmsg, "Error", MB_OK);
+	}
 	return 0;
 }
