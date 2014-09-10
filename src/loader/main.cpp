@@ -36,8 +36,14 @@ int WINAPI WinMain(
 	ZeroMemory(&pi, sizeof(pi));
 	si.cb = sizeof(si);
 
+	int size = strlen(lpCmdLine) + strlen("nwtoolset.exe") + 2;
+	char *cmdline = new char[size];
+	sprintf_s(cmdline, size, "%s %s", "nwtoolset.exe", lpCmdLine);
+
 	//MessageBox(NULL, lpCmdLine, "Cmd Line", MB_OK);
 
-	DetourCreateProcessWithDll("nwtoolset.exe", lpCmdLine, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi, "NWNTX.dll", NULL);
+	DetourCreateProcessWithDll(NULL, cmdline, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi, "NWNTX.dll", NULL);
+
+	delete cmdline;
 	return 0;
 }
